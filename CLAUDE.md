@@ -13,6 +13,41 @@ neutral corporate copy.
 See `PROJECT.md` for full scope, deliverables, and roadmap. Read it first when
 picking up work in this repo.
 
+**Status:** the MTP prototype is built and deployed — live at
+https://ghosted-jade.vercel.app, source pushed to
+`github.com/alstuchlik-sudo/ghosted` (GitHub → Vercel auto-deploy on push to
+`main`). Slide deck and PRD are separate, not-yet-built deliverables.
+
+## Implementation notes
+
+- **Stack:** React + TypeScript + Vite + Tailwind v4 + react-router-dom. No
+  backend — all state (`Pipeline[]`, `Profile`) lives in `localStorage` via
+  the context/store in `src/store/store.tsx`.
+- **AI prep generation is not a real model call.** `src/lib/prepGenerator.ts`
+  is a deterministic keyword-matcher: it scores the JD against a skill lexicon
+  and the user's core competencies, then picks/tailors matching lines from
+  structured experience entries. This was a deliberate choice (no API key,
+  no backend, works offline) — swapping in a real LLM call is a contained
+  change to this one file, but confirm with the user first since it adds
+  real infra/cost to what's meant to be a lightweight demo.
+- **Profile is structured, not free text** (`src/types/index.ts`): `bio`
+  (email/phone/address, all optional), `careerObjective`, repeatable
+  `experience[]` (from/to/employer/role/description) and `education[]`
+  (from/to/college/degree) entries, plus `coreCompetencies[]` and
+  `trainingCertifications[]` as string lists. The prep generator reads
+  directly from these fields — don't reintroduce a free-text CV blob without
+  updating `prepGenerator.ts` to match.
+- **Storage keys are versioned** (`ghosted:pipelines:v2`, `ghosted:profile:v2`,
+  `ghosted:seeded:v2` in `store.tsx`). Bump the suffix again if you change
+  either shape incompatibly, so existing demo browsers reseed cleanly instead
+  of loading stale/malformed data.
+- **Status/staleness logic** lives in `src/lib/status.ts` (thresholds,
+  color mapping, the "They texted back!" / "Ghosted" / "Getting quiet" labels)
+  — keep new status copy there, not scattered across components.
+- Verify UI changes with a real browser pass (Playwright, installed
+  temporarily and removed after — it's not a permanent devDependency) before
+  calling a change done; this app has no automated test suite.
+
 ## Product summary (quick reference)
 
 - User manually tracks job pipelines (company, role, JD, stage, next-action date).

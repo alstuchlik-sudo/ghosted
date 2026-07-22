@@ -9,6 +9,10 @@ HelloPM Cohort 51 — Assignment 2 submission. Three required deliverables:
 
 Product: **Ghosted.** — a job-search tracking + AI prep-generation tool.
 
+**Status:** MTP prototype is built and deployed —
+https://ghosted-jade.vercel.app (source: `github.com/alstuchlik-sudo/ghosted`).
+Slide deck and PRD are still outstanding deliverables.
+
 **Positioning:** the current job market's defining shared pain is being
 ghosted — by recruiters, by ATS black holes, by "we'll be in touch." The
 product name and tone lean into that directly instead of using neutral
@@ -38,11 +42,19 @@ different stage), rather than someone doing a single, occasional job search.
 
 ### 2. AI prep-generation tool
 Triggered per pipeline. Takes as input: the JD, the user's CV/experience
-history, and the pipeline's current stage. Produces:
+profile, and the pipeline's current stage. Produces:
 - Tailored CV bullets
 - Tailored cover letter
 - Interview talking points (mapped to the user's real experience, relevant to
   the current stage and likely questions)
+
+The CV/experience profile is entered once (not per pipeline) as structured
+fields, not a single pasted block: bio (name, email, phone, address — contact
+fields optional), career objective, professional experience (repeatable:
+from/to, employer, role, description), education (repeatable: from/to,
+college, degree), core competencies, and training/certifications. Structuring
+it this way is what lets prep generation target specific experience entries
+and competencies instead of guessing at relevance from free text.
 
 **Core design principle:** tracking data is not a standalone to-do list — it's
 the context that makes the AI prep tailored rather than generic. The
