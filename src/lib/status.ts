@@ -78,6 +78,12 @@ export const colorClasses: Record<StatusInfo['color'], { bg: string; text: strin
   },
 }
 
+export function likelihoodColor(value: number): StatusInfo['color'] {
+  if (value >= 70) return 'teal'
+  if (value >= 40) return 'amber'
+  return 'coral'
+}
+
 export function nextStage(stage: Stage): Stage | null {
   const order: Stage[] = ['Applied', 'Screening', 'Interview', 'Offer']
   const idx = order.indexOf(stage)

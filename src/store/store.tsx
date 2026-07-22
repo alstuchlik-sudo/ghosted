@@ -7,9 +7,10 @@ import { generatePrep } from '../lib/prepGenerator'
 // v2: profile shape changed from a free-text cvText field to structured
 // bio/experience/education/competencies — bump keys so anyone with old-shape
 // data cached gets a clean reseed instead of a blank profile.
-const PIPELINES_KEY = 'ghosted:pipelines:v2'
+// v3: pipeline shape gained salary/likelihood/favorite fields.
+const PIPELINES_KEY = 'ghosted:pipelines:v3'
 const PROFILE_KEY = 'ghosted:profile:v2'
-const SEEDED_KEY = 'ghosted:seeded:v2'
+const SEEDED_KEY = 'ghosted:seeded:v3'
 
 function loadPipelines(): Pipeline[] {
   const raw = localStorage.getItem(PIPELINES_KEY)
@@ -56,6 +57,8 @@ interface StoreValue {
     role: string
     jdText: string
     jdLink: string
+    salary: string
+    likelihood: number
     stage: Stage
     nextActionDate: string | null
     nextActionNote: string
@@ -63,6 +66,7 @@ interface StoreValue {
   updatePipeline: (id: string, patch: Partial<Pipeline>) => void
   logUpdate: (id: string, note: string, newStage?: Stage) => void
   deletePipeline: (id: string) => void
+  toggleFavorite: (id: string) => void
   generatePrepFor: (id: string) => PrepOutput | null
   updateProfile: (profile: Profile) => void
   resetDemoData: () => void
@@ -104,6 +108,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       role: input.role,
       jdText: input.jdText,
       jdLink: input.jdLink,
+      salary: input.salary,
+      likelihood: input.likelihood,
+      favorite: false,
       stage: input.stage,
       createdAt: now,
       lastUpdatedAt: now,
@@ -143,6 +150,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setPipelines((prev) => prev.filter((p) => p.id !== id))
   }, [])
 
+  const toggleFavorite: StoreValue['toggleFavorite'] = useCallback((id) => {
+    setPipelines((prev) => prev.map((p) => (p.id === id ? { ...p, favorite: !p.favorite } : p)))
+  }, [])
+
   const generatePrepFor: StoreValue['generatePrepFor'] = useCallback(
     (id) => {
       const pipeline = pipelines.find((p) => p.id === id)
@@ -171,11 +182,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       updatePipeline,
       logUpdate,
       deletePipeline,
+      toggleFavorite,
       generatePrepFor,
       updateProfile,
       resetDemoData,
     }),
-    [pipelines, profile, addPipeline, updatePipeline, logUpdate, deletePipeline, generatePrepFor, updateProfile, resetDemoData],
+    [
+      pipelines,
+      profile,
+      addPipeline,
+      updatePipeline,
+      logUpdate,
+      deletePipeline,
+      toggleFavorite,
+      generatePrepFor,
+      updateProfile,
+      resetDemoData,
+    ],
   )
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>

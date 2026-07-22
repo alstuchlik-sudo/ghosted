@@ -15,13 +15,16 @@ function statusRank(p: Pipeline) {
 export function Dashboard() {
   const { pipelines } = useStore()
   const [filter, setFilter] = useState<StatusKey | 'all'>('all')
+  const [favoritesOnly, setFavoritesOnly] = useState(false)
 
   const ghostedCount = pipelines.filter((p) => getStatus(p).key === 'ghosted').length
   const quietCount = pipelines.filter((p) => getStatus(p).key === 'quiet').length
 
   const sorted = useMemo(() => [...pipelines].sort((a, b) => statusRank(a) - statusRank(b)), [pipelines])
 
-  const visible = filter === 'all' ? sorted : sorted.filter((p) => getStatus(p).key === filter)
+  const visible = sorted
+    .filter((p) => filter === 'all' || getStatus(p).key === filter)
+    .filter((p) => !favoritesOnly || p.favorite)
 
   if (pipelines.length === 0) {
     return (
@@ -50,12 +53,25 @@ export function Dashboard() {
             {pipelines.length} active application{pipelines.length === 1 ? '' : 's'} being tracked.
           </p>
         </div>
-        <Link
-          to="/pipeline/new"
-          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
-        >
-          + Add a pipeline
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setFavoritesOnly((v) => !v)}
+            aria-pressed={favoritesOnly}
+            className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+              favoritesOnly
+                ? 'border-amber-300 bg-amber-100 text-amber-700 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                : 'border-slate-300 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'
+            }`}
+          >
+            {favoritesOnly ? '★' : '☆'} Favorites only
+          </button>
+          <Link
+            to="/pipeline/new"
+            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+          >
+            + Add a pipeline
+          </Link>
+        </div>
       </div>
 
       {(ghostedCount > 0 || quietCount > 0) && (
@@ -93,17 +109,29 @@ export function Dashboard() {
         </div>
       )}
 
-      {filter !== 'all' && (
-        <button onClick={() => setFilter('all')} className="mt-3 text-xs font-medium text-slate-500 underline hover:text-slate-700 dark:text-slate-400">
+      {(filter !== 'all' || favoritesOnly) && (
+        <button
+          onClick={() => {
+            setFilter('all')
+            setFavoritesOnly(false)
+          }}
+          className="mt-3 text-xs font-medium text-slate-500 underline hover:text-slate-700 dark:text-slate-400"
+        >
           Clear filter
         </button>
       )}
 
-      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {visible.map((p) => (
-          <PipelineCard key={p.id} pipeline={p} />
-        ))}
-      </div>
+      {visible.length === 0 ? (
+        <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
+          No pipelines match this filter.
+        </p>
+      ) : (
+        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {visible.map((p) => (
+            <PipelineCard key={p.id} pipeline={p} />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

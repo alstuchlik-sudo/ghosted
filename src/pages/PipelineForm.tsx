@@ -14,6 +14,8 @@ export function PipelineForm() {
   const [role, setRole] = useState(existing?.role ?? '')
   const [jdText, setJdText] = useState(existing?.jdText ?? '')
   const [jdLink, setJdLink] = useState(existing?.jdLink ?? '')
+  const [salary, setSalary] = useState(existing?.salary ?? '')
+  const [likelihood, setLikelihood] = useState(existing?.likelihood ?? 50)
   const [stage, setStage] = useState<Stage>(existing?.stage ?? 'Applied')
   const [nextActionDate, setNextActionDate] = useState(existing?.nextActionDate ?? '')
   const [nextActionNote, setNextActionNote] = useState(existing?.nextActionNote ?? '')
@@ -32,6 +34,8 @@ export function PipelineForm() {
         role: role.trim(),
         jdText,
         jdLink,
+        salary,
+        likelihood,
         nextActionDate: nextActionDate || null,
         nextActionNote,
       })
@@ -42,6 +46,8 @@ export function PipelineForm() {
         role: role.trim(),
         jdText,
         jdLink,
+        salary,
+        likelihood,
         stage,
         nextActionDate: nextActionDate || null,
         nextActionNote,
@@ -99,6 +105,34 @@ export function PipelineForm() {
             onChange={(e) => setJdLink(e.target.value)}
             className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-slate-500 dark:border-slate-700 dark:bg-slate-900"
             placeholder="https://..."
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium">Salary</label>
+          <input
+            value={salary}
+            onChange={(e) => setSalary(e.target.value)}
+            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-slate-500 dark:border-slate-700 dark:bg-slate-900"
+            placeholder="e.g. $140k–160k, or Not disclosed"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium">
+            Gut feeling: is this the one? <span className="font-normal text-slate-400">({likelihood}%)</span>
+          </label>
+          <p className="mt-0.5 text-xs text-slate-400">
+            Your subjective read on fit + odds of winning it — not a science, just a gut check.
+          </p>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={5}
+            value={likelihood}
+            onChange={(e) => setLikelihood(Number(e.target.value))}
+            className="mt-2 w-full accent-slate-900 dark:accent-white"
           />
         </div>
 

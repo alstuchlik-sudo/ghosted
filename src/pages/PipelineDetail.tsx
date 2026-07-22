@@ -3,6 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useStore } from '../store/store'
 import { StatusBadge, StageBadge } from '../components/StatusBadge'
 import { PrepOutputView } from '../components/PrepOutputView'
+import { LikelihoodBar } from '../components/LikelihoodBar'
+import { FavoriteToggle } from '../components/FavoriteToggle'
 import { STAGES, type Stage } from '../types'
 import { nextStage } from '../lib/status'
 
@@ -13,7 +15,7 @@ function formatDateTime(iso: string) {
 export function PipelineDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { pipelines, logUpdate, deletePipeline, generatePrepFor, profile } = useStore()
+  const { pipelines, logUpdate, deletePipeline, toggleFavorite, generatePrepFor, profile } = useStore()
   const pipeline = pipelines.find((p) => p.id === id)
 
   const [note, setNote] = useState('')
@@ -59,9 +61,12 @@ export function PipelineDetail() {
       </Link>
 
       <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">{pipeline.company}</h1>
-          <p className="text-slate-500 dark:text-slate-400">{pipeline.role}</p>
+        <div className="flex items-start gap-3">
+          <FavoriteToggle favorite={pipeline.favorite} onToggle={() => toggleFavorite(pipeline.id)} />
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">{pipeline.company}</h1>
+            <p className="text-slate-500 dark:text-slate-400">{pipeline.role}</p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <StageBadge stage={pipeline.stage} />
@@ -69,26 +74,70 @@ export function PipelineDetail() {
         </div>
       </div>
 
-      <div className="mt-2 flex gap-3 text-sm">
-        <Link to={`/pipeline/${pipeline.id}/edit`} className="text-slate-500 underline hover:text-slate-700 dark:text-slate-400">
-          Edit details
-        </Link>
-        {pipeline.jdLink && (
-          <a href={pipeline.jdLink} target="_blank" rel="noreferrer" className="text-slate-500 underline hover:text-slate-700 dark:text-slate-400">
-            View JD link
-          </a>
-        )}
-        <button onClick={handleDelete} className="text-rose-500 underline hover:text-rose-700">
-          Delete
-        </button>
-      </div>
-
-      {pipeline.nextActionDate && (
-        <div className="mt-4 rounded-lg bg-slate-100 px-3 py-2 text-sm dark:bg-slate-800/60">
-          Next action: <span className="font-medium">{pipeline.nextActionNote || 'Follow up'}</span> ·{' '}
-          {new Date(pipeline.nextActionDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+      {/* Details */}
+      <section className="mt-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold">Details</h2>
+          <div className="flex items-center gap-4 text-sm">
+            <Link
+              to={`/pipeline/${pipeline.id}/edit`}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            >
+              Edit details
+            </Link>
+            <button onClick={handleDelete} className="text-rose-500 underline hover:text-rose-700">
+              Delete
+            </button>
+          </div>
         </div>
-      )}
+
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <div className="text-xs font-medium uppercase tracking-wide text-slate-400">Salary</div>
+            <div className="mt-1 text-sm">
+              {pipeline.salary ? pipeline.salary : <span className="text-slate-400">Not added</span>}
+            </div>
+          </div>
+          <div>
+            <div className="text-xs font-medium uppercase tracking-wide text-slate-400">Gut feeling — is this the one?</div>
+            <div className="mt-1.5">
+              <LikelihoodBar value={pipeline.likelihood} />
+            </div>
+          </div>
+          <div>
+            <div className="text-xs font-medium uppercase tracking-wide text-slate-400">Next action</div>
+            <div className="mt-1 text-sm">
+              {pipeline.nextActionDate ? (
+                <>
+                  {pipeline.nextActionNote || 'Follow up'} ·{' '}
+                  {new Date(pipeline.nextActionDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                </>
+              ) : (
+                <span className="text-slate-400">None set</span>
+              )}
+            </div>
+          </div>
+          <div>
+            <div className="text-xs font-medium uppercase tracking-wide text-slate-400">JD link</div>
+            <div className="mt-1 text-sm">
+              {pipeline.jdLink ? (
+                <a href={pipeline.jdLink} target="_blank" rel="noreferrer" className="text-indigo-600 underline hover:text-indigo-500 dark:text-indigo-400">
+                  {pipeline.jdLink}
+                </a>
+              ) : (
+                <span className="text-slate-400">None added</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <div className="text-xs font-medium uppercase tracking-wide text-slate-400">Job description</div>
+          <div className="mt-1 whitespace-pre-wrap rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-800/60">
+            {pipeline.jdText ? pipeline.jdText : <span className="text-slate-400">No JD text added</span>}
+          </div>
+        </div>
+      </section>
 
       {/* Log update */}
       <section className="mt-6 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">

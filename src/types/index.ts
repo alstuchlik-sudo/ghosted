@@ -23,6 +23,9 @@ export interface Pipeline {
   role: string
   jdText: string
   jdLink: string
+  salary: string
+  likelihood: number // 0-100, subjective gut feeling of fit + odds of winning it
+  favorite: boolean
   stage: Stage
   createdAt: string // ISO
   lastUpdatedAt: string // ISO
