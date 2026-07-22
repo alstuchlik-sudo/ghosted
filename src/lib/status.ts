@@ -8,36 +8,76 @@ export interface StatusInfo {
   color: 'teal' | 'amber' | 'coral' | 'blue' | 'slate'
 }
 
-const STALE_QUIET_DAYS = 7
-const STALE_GHOSTED_DAYS = 14
-const TEXTED_BACK_WINDOW_DAYS = 2
+export const STALE_QUIET_DAYS = 7
+export const STALE_GHOSTED_DAYS = 14
+export const TEXTED_BACK_WINDOW_DAYS = 2
 
 function daysSince(iso: string, now: Date): number {
   const then = new Date(iso).getTime()
   return Math.floor((now.getTime() - then) / (1000 * 60 * 60 * 24))
 }
 
+// Single source of truth for label text, color, and meaning per status —
+// used by getStatus() below, the StatusBadge hover tooltip, and the About
+// page's label glossary, so all three never drift out of sync.
+export const STATUS_CATALOG: Record<StatusKey, Omit<StatusInfo, 'key'> & { description: string }> = {
+  active: {
+    label: 'Active',
+    color: 'teal',
+    description: `Updated within the last ${STALE_QUIET_DAYS} days — still moving normally.`,
+  },
+  quiet: {
+    label: 'Getting quiet',
+    color: 'amber',
+    description: `No update in ${STALE_QUIET_DAYS}+ days. Not dead yet, but worth a nudge before it goes cold.`,
+  },
+  ghosted: {
+    label: 'Ghosted',
+    color: 'coral',
+    description: `No update in ${STALE_GHOSTED_DAYS}+ days. Radio silence — time to follow up or let it go.`,
+  },
+  'texted-back': {
+    label: 'They texted back!',
+    color: 'blue',
+    description: `The stage moved forward in the last ${TEXTED_BACK_WINDOW_DAYS} days — genuine recent movement.`,
+  },
+  offer: {
+    label: 'They said yes!',
+    color: 'blue',
+    description: 'This pipeline reached the Offer stage.',
+  },
+  rejected: {
+    label: "It's not you, it's them",
+    color: 'slate',
+    description: 'This pipeline was marked Rejected.',
+  },
+}
+
+export const STATUS_DESCRIPTIONS: Record<StatusKey, string> = Object.fromEntries(
+  (Object.keys(STATUS_CATALOG) as StatusKey[]).map((key) => [key, STATUS_CATALOG[key].description]),
+) as Record<StatusKey, string>
+
 export function getStatus(pipeline: Pipeline, now: Date = new Date()): StatusInfo {
   if (pipeline.stage === 'Offer') {
-    return { key: 'offer', label: 'They said yes!', color: 'blue' }
+    return { key: 'offer', ...STATUS_CATALOG.offer }
   }
   if (pipeline.stage === 'Rejected') {
-    return { key: 'rejected', label: "It's not you, it's them", color: 'slate' }
+    return { key: 'rejected', ...STATUS_CATALOG.rejected }
   }
 
   const sinceAdvanced = daysSince(pipeline.lastAdvancedAt, now)
   if (sinceAdvanced <= TEXTED_BACK_WINDOW_DAYS) {
-    return { key: 'texted-back', label: 'They texted back!', color: 'blue' }
+    return { key: 'texted-back', ...STATUS_CATALOG['texted-back'] }
   }
 
   const sinceUpdate = daysSince(pipeline.lastUpdatedAt, now)
   if (sinceUpdate >= STALE_GHOSTED_DAYS) {
-    return { key: 'ghosted', label: 'Ghosted', color: 'coral' }
+    return { key: 'ghosted', ...STATUS_CATALOG.ghosted }
   }
   if (sinceUpdate >= STALE_QUIET_DAYS) {
-    return { key: 'quiet', label: 'Getting quiet', color: 'amber' }
+    return { key: 'quiet', ...STATUS_CATALOG.quiet }
   }
-  return { key: 'active', label: 'Active', color: 'teal' }
+  return { key: 'active', ...STATUS_CATALOG.active }
 }
 
 export function isStale(pipeline: Pipeline, now: Date = new Date()): boolean {

@@ -52,9 +52,23 @@ https://ghosted-jade.vercel.app, source pushed to
   not derived — don't confuse it with `getStatus()` in `status.ts`, which is
   activity-derived. They share a color ramp (`likelihoodColor()` in
   `status.ts`) but are otherwise unrelated signals.
-- **Status/staleness logic** lives in `src/lib/status.ts` (thresholds,
-  color mapping, the "They texted back!" / "Ghosted" / "Getting quiet" labels)
-  — keep new status copy there, not scattered across components.
+- **Status/staleness logic** lives in `src/lib/status.ts`. `STATUS_CATALOG` is
+  the single source of truth for each status's label, color, and hover-tooltip
+  description — `getStatus()`, `StatusBadge`'s `title` attribute, and the
+  About page's label glossary all read from it. Edit copy there, not in three
+  places; a new status key needs an entry in `STATUS_CATALOG` and nowhere
+  else.
+- **Pipeline order is the array order, not a separate field.** There's no
+  `Pipeline.order` — dragging a card in `Dashboard.tsx` calls
+  `reorderPipeline(draggedId, targetId)` in `store.tsx`, which splices the
+  `pipelines` array directly (persisted automatically like everything else in
+  the store). "Sort by likelihood" is a transient display-only sort in
+  `Dashboard.tsx` (`[...visible].sort(...)`) — it never mutates the stored
+  array, so turning it off reveals the manual order underneath. Drag handles
+  are hidden and dragging is disabled whenever that sort is active, since
+  visual position wouldn't match the underlying array in that mode. Drag
+  itself is plain HTML5 `draggable`/`onDragStart`/`onDragOver`/`onDrop` — no
+  DnD library.
 - Verify UI changes with a real browser pass (Playwright, installed
   temporarily and removed after — it's not a permanent devDependency) before
   calling a change done; this app has no automated test suite.
@@ -67,6 +81,10 @@ https://ghosted-jade.vercel.app, source pushed to
 - System flags stale pipelines (no update in N days).
 - The pipeline detail page shows every field inline; users can favorite
   pipelines and filter the dashboard to favorites only.
+- Users can drag pipeline cards to reorder them, or toggle a sort-by-likelihood
+  view; status badges show their trigger condition on hover; an About page
+  (nav: Pipelines / My CV / About) explains capabilities and the full status
+  label glossary.
 - Per pipeline, user can trigger AI prep generation, which uses the JD + the
   user's CV/experience + the current pipeline stage to produce:
   1. Tailored CV bullets

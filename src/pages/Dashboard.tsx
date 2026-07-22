@@ -1,30 +1,26 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useStore } from '../store/store'
 import { PipelineCard } from '../components/PipelineCard'
 import { Ghost } from '../components/Ghost'
 import { getStatus, type StatusKey } from '../lib/status'
-import type { Pipeline } from '../types'
-
-const STATUS_ORDER: StatusKey[] = ['ghosted', 'quiet', 'texted-back', 'active', 'offer', 'rejected']
-
-function statusRank(p: Pipeline) {
-  return STATUS_ORDER.indexOf(getStatus(p).key)
-}
 
 export function Dashboard() {
-  const { pipelines } = useStore()
+  const { pipelines, reorderPipeline } = useStore()
   const [filter, setFilter] = useState<StatusKey | 'all'>('all')
   const [favoritesOnly, setFavoritesOnly] = useState(false)
+  const [sortByLikelihood, setSortByLikelihood] = useState(false)
+  const [draggedId, setDraggedId] = useState<string | null>(null)
 
   const ghostedCount = pipelines.filter((p) => getStatus(p).key === 'ghosted').length
   const quietCount = pipelines.filter((p) => getStatus(p).key === 'quiet').length
 
-  const sorted = useMemo(() => [...pipelines].sort((a, b) => statusRank(a) - statusRank(b)), [pipelines])
+  let visible = pipelines
+  if (filter !== 'all') visible = visible.filter((p) => getStatus(p).key === filter)
+  if (favoritesOnly) visible = visible.filter((p) => p.favorite)
+  if (sortByLikelihood) visible = [...visible].sort((a, b) => b.likelihood - a.likelihood)
 
-  const visible = sorted
-    .filter((p) => filter === 'all' || getStatus(p).key === filter)
-    .filter((p) => !favoritesOnly || p.favorite)
+  const draggingEnabled = !sortByLikelihood
 
   if (pipelines.length === 0) {
     return (
@@ -51,9 +47,21 @@ export function Dashboard() {
           <h1 className="text-2xl font-bold tracking-tight">Your pipelines</h1>
           <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
             {pipelines.length} active application{pipelines.length === 1 ? '' : 's'} being tracked.
+            {draggingEnabled && ' Drag a card to reorder it.'}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setSortByLikelihood((v) => !v)}
+            aria-pressed={sortByLikelihood}
+            className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+              sortByLikelihood
+                ? 'border-teal-300 bg-teal-100 text-teal-700 dark:border-teal-800 dark:bg-teal-950/60 dark:text-teal-300'
+                : 'border-slate-300 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'
+            }`}
+          >
+            ↓ Sort by likelihood
+          </button>
           <button
             onClick={() => setFavoritesOnly((v) => !v)}
             aria-pressed={favoritesOnly}
@@ -109,11 +117,12 @@ export function Dashboard() {
         </div>
       )}
 
-      {(filter !== 'all' || favoritesOnly) && (
+      {(filter !== 'all' || favoritesOnly || sortByLikelihood) && (
         <button
           onClick={() => {
             setFilter('all')
             setFavoritesOnly(false)
+            setSortByLikelihood(false)
           }}
           className="mt-3 text-xs font-medium text-slate-500 underline hover:text-slate-700 dark:text-slate-400"
         >
@@ -128,7 +137,19 @@ export function Dashboard() {
       ) : (
         <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {visible.map((p) => (
-            <PipelineCard key={p.id} pipeline={p} />
+            <PipelineCard
+              key={p.id}
+              pipeline={p}
+              draggable={draggingEnabled}
+              isDragging={draggedId === p.id}
+              onDragStart={() => setDraggedId(p.id)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={() => {
+                if (draggedId) reorderPipeline(draggedId, p.id)
+                setDraggedId(null)
+              }}
+              onDragEnd={() => setDraggedId(null)}
+            />
           ))}
         </div>
       )}

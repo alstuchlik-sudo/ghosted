@@ -1,12 +1,13 @@
 import type { Pipeline } from '../types'
-import { colorClasses, getStatus } from '../lib/status'
+import { colorClasses, getStatus, STATUS_DESCRIPTIONS } from '../lib/status'
 
 export function StatusBadge({ pipeline }: { pipeline: Pipeline }) {
   const status = getStatus(pipeline)
   const c = colorClasses[status.color]
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${c.bg} ${c.text} ${c.ring}`}
+      title={STATUS_DESCRIPTIONS[status.key]}
+      className={`inline-flex cursor-default items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${c.bg} ${c.text} ${c.ring}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${c.dot}`} />
       {status.label}

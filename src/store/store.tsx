@@ -67,6 +67,7 @@ interface StoreValue {
   logUpdate: (id: string, note: string, newStage?: Stage) => void
   deletePipeline: (id: string) => void
   toggleFavorite: (id: string) => void
+  reorderPipeline: (draggedId: string, targetId: string) => void
   generatePrepFor: (id: string) => PrepOutput | null
   updateProfile: (profile: Profile) => void
   resetDemoData: () => void
@@ -154,6 +155,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setPipelines((prev) => prev.map((p) => (p.id === id ? { ...p, favorite: !p.favorite } : p)))
   }, [])
 
+  const reorderPipeline: StoreValue['reorderPipeline'] = useCallback((draggedId, targetId) => {
+    if (draggedId === targetId) return
+    setPipelines((prev) => {
+      const fromIndex = prev.findIndex((p) => p.id === draggedId)
+      const toIndex = prev.findIndex((p) => p.id === targetId)
+      if (fromIndex === -1 || toIndex === -1) return prev
+      const next = [...prev]
+      const [moved] = next.splice(fromIndex, 1)
+      next.splice(toIndex, 0, moved)
+      return next
+    })
+  }, [])
+
   const generatePrepFor: StoreValue['generatePrepFor'] = useCallback(
     (id) => {
       const pipeline = pipelines.find((p) => p.id === id)
@@ -183,6 +197,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       logUpdate,
       deletePipeline,
       toggleFavorite,
+      reorderPipeline,
       generatePrepFor,
       updateProfile,
       resetDemoData,
@@ -195,6 +210,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       logUpdate,
       deletePipeline,
       toggleFavorite,
+      reorderPipeline,
       generatePrepFor,
       updateProfile,
       resetDemoData,

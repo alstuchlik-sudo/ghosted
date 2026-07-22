@@ -18,14 +18,39 @@ function daysAgo(iso: string) {
   return `${d} days ago`
 }
 
-export function PipelineCard({ pipeline }: { pipeline: Pipeline }) {
+interface PipelineCardProps {
+  pipeline: Pipeline
+  draggable?: boolean
+  isDragging?: boolean
+  onDragStart?: () => void
+  onDragOver?: (e: React.DragEvent) => void
+  onDrop?: () => void
+  onDragEnd?: () => void
+}
+
+export function PipelineCard({
+  pipeline,
+  draggable = false,
+  isDragging = false,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onDragEnd,
+}: PipelineCardProps) {
   const { toggleFavorite } = useStore()
   const isOverdue = pipeline.nextActionDate && new Date(pipeline.nextActionDate) < new Date(new Date().toDateString())
 
   return (
     <Link
       to={`/pipeline/${pipeline.id}`}
-      className="group block rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+      draggable={draggable}
+      onDragStart={draggable ? onDragStart : undefined}
+      onDragOver={draggable ? onDragOver : undefined}
+      onDrop={draggable ? onDrop : undefined}
+      onDragEnd={draggable ? onDragEnd : undefined}
+      className={`group block rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 ${
+        draggable ? 'cursor-grab active:cursor-grabbing' : ''
+      } ${isDragging ? 'opacity-40' : ''}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-2">
@@ -35,7 +60,14 @@ export function PipelineCard({ pipeline }: { pipeline: Pipeline }) {
             <p className="truncate text-sm text-slate-500 dark:text-slate-400">{pipeline.role}</p>
           </div>
         </div>
-        <StatusBadge pipeline={pipeline} />
+        <div className="flex shrink-0 items-center gap-2">
+          <StatusBadge pipeline={pipeline} />
+          {draggable && (
+            <span className="text-slate-300 dark:text-slate-600" title="Drag to reorder" aria-hidden="true">
+              ⠿
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">

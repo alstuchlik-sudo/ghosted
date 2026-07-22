@@ -5,6 +5,7 @@ import { Dashboard } from './pages/Dashboard'
 import { PipelineForm } from './pages/PipelineForm'
 import { PipelineDetail } from './pages/PipelineDetail'
 import { Profile } from './pages/Profile'
+import { About } from './pages/About'
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
             <Route path="/pipeline/:id" element={<PipelineDetail />} />
             <Route path="/pipeline/:id/edit" element={<PipelineForm />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/about" element={<About />} />
           </Routes>
         </Layout>
       </BrowserRouter>

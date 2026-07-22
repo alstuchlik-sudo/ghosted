@@ -47,6 +47,12 @@ different stage), rather than someone doing a single, occasional job search.
 - Pipeline detail view shows every field (JD text, JD link, salary,
   likelihood, next action) inline, with no click-through required — "Edit
   details" is only for editing, never the only way to see the data
+- Manual reordering: drag pipeline cards on the overview to prioritize the
+  ones you care about most (persists across reloads)
+- Sort-by-likelihood: a toggle that re-orders the overview by likelihood
+  descending, overriding manual order for as long as it's on
+- Status badges show a short explanation of what triggered that label on
+  hover (see "What the status labels mean" below)
 
 ### 2. AI prep-generation tool
 Triggered per pipeline. Takes as input: the JD, the user's CV/experience
@@ -69,6 +75,23 @@ the context that makes the AI prep tailored rather than generic. The
 differentiator is that prep quality depends on knowing the user's history and
 where they are in that specific process, not just "paste a JD, get a
 cover letter."
+
+### 3. About page
+A dedicated page (nav: Pipelines / My CV / About) explaining the app's
+capabilities in plain language and giving a full glossary of every status
+label with the exact trigger condition — the same explanation shown in each
+badge's hover tooltip, so the two never say different things. Exists because
+the status logic (day thresholds, stage-derived labels) isn't otherwise
+self-explanatory to a new user or a demo evaluator.
+
+**What the status labels mean** (day thresholds live in `src/lib/status.ts`,
+constants `STALE_QUIET_DAYS` / `STALE_GHOSTED_DAYS` / `TEXTED_BACK_WINDOW_DAYS`):
+- **Active** (teal) — updated within the last 7 days.
+- **Getting quiet** (amber) — no update in 7+ days.
+- **Ghosted** (coral) — no update in 14+ days.
+- **They texted back!** (blue) — the stage moved forward in the last 2 days.
+- **They said yes!** (blue) — pipeline reached the Offer stage.
+- **It's not you, it's them** (slate) — pipeline marked Rejected.
 
 ## Design and tone
 
