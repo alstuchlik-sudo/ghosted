@@ -4,9 +4,12 @@ import { makeId } from '../lib/id'
 import { buildSeedPipelines, seedProfile } from '../lib/seed'
 import { generatePrep } from '../lib/prepGenerator'
 
-const PIPELINES_KEY = 'ghosted:pipelines'
-const PROFILE_KEY = 'ghosted:profile'
-const SEEDED_KEY = 'ghosted:seeded'
+// v2: profile shape changed from a free-text cvText field to structured
+// bio/experience/education/competencies — bump keys so anyone with old-shape
+// data cached gets a clean reseed instead of a blank profile.
+const PIPELINES_KEY = 'ghosted:pipelines:v2'
+const PROFILE_KEY = 'ghosted:profile:v2'
+const SEEDED_KEY = 'ghosted:seeded:v2'
 
 function loadPipelines(): Pipeline[] {
   const raw = localStorage.getItem(PIPELINES_KEY)
@@ -20,16 +23,29 @@ function loadPipelines(): Pipeline[] {
   return []
 }
 
+function emptyProfile(): Profile {
+  return {
+    name: '',
+    bio: { email: '', phone: '', address: '' },
+    careerObjective: '',
+    experience: [],
+    education: [],
+    coreCompetencies: [],
+    trainingCertifications: [],
+  }
+}
+
 function loadProfile(): Profile {
   const raw = localStorage.getItem(PROFILE_KEY)
   if (raw) {
     try {
-      return JSON.parse(raw) as Profile
+      const parsed = JSON.parse(raw)
+      if (parsed && Array.isArray(parsed.experience)) return parsed as Profile
     } catch {
-      return { name: '', cvText: '' }
+      // fall through to empty profile
     }
   }
-  return { name: '', cvText: '' }
+  return emptyProfile()
 }
 
 interface StoreValue {
@@ -64,7 +80,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   })
   const [profile, setProfile] = useState<Profile>(() => {
     const existing = loadProfile()
-    if (existing.cvText) return existing
+    if (existing.experience.length > 0 || existing.careerObjective.trim()) return existing
     if (localStorage.getItem(SEEDED_KEY)) return existing
     return seedProfile
   })

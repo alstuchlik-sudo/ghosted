@@ -14,32 +14,70 @@ const daysFuture = (n: number) => {
 
 export const seedProfile: Profile = {
   name: 'Alex Rivera',
-  cvText: `Alex Rivera
-Product Manager, 5 years experience
-
-EXPERIENCE
-
-Senior Product Manager — Loopline (2022–present)
-- Owned the core scheduling product used by 40k+ weekly active users, driving a 22% increase in activation through onboarding redesign
-- Led cross-functional team of 6 engineers and 2 designers to ship a real-time collaboration feature, reducing customer churn by 8%
-- Ran quarterly discovery interviews with 30+ customers to prioritize roadmap; introduced a lightweight RICE scoring process adopted company-wide
-- Partnered with data science to build an experimentation framework (A/B testing) that shaped 12 shipped features
-
-Product Manager — Fintechly (2020–2022)
-- Launched a self-serve onboarding flow for SMB customers, cutting time-to-first-value from 9 days to 36 hours
-- Managed the product backlog for a payments reconciliation tool used by internal finance teams, saving ~15 hours/week of manual work
-- Collaborated directly with compliance and legal to ship features meeting PCI-DSS requirements
-- Wrote and maintained PRDs, ran sprint planning, and represented product in exec-level roadmap reviews
-
-Associate Product Manager — BrightHealth (2019–2020)
-- Supported the patient intake team, shipping a digital forms product that reduced front-desk paperwork time by 40%
-- Conducted usability testing sessions and synthesized findings into prioritized backlog items
-
-SKILLS
-Product strategy, roadmapping, user research, A/B testing, SQL (intermediate), Figma, Jira, stakeholder management, agile/scrum, PRD writing, cross-functional leadership, data-informed decision making
-
-EDUCATION
-B.S. Business Administration, University of Michigan`,
+  bio: {
+    email: 'alex.rivera@example.com',
+    phone: '(555) 123-4567',
+    address: 'Austin, TX',
+  },
+  careerObjective:
+    'Senior Product Manager with 5 years of experience seeking a role where I can own a core product end-to-end, using customer discovery and experimentation to drive measurable growth.',
+  experience: [
+    {
+      id: makeId(),
+      from: '2022',
+      to: 'Present',
+      employer: 'Loopline',
+      role: 'Senior Product Manager',
+      description: `Owned the core scheduling product used by 40k+ weekly active users, driving a 22% increase in activation through onboarding redesign
+Led cross-functional team of 6 engineers and 2 designers to ship a real-time collaboration feature, reducing customer churn by 8%
+Ran quarterly discovery interviews with 30+ customers to prioritize roadmap; introduced a lightweight RICE scoring process adopted company-wide
+Partnered with data science to build an experimentation framework (A/B testing) that shaped 12 shipped features`,
+    },
+    {
+      id: makeId(),
+      from: '2020',
+      to: '2022',
+      employer: 'Fintechly',
+      role: 'Product Manager',
+      description: `Launched a self-serve onboarding flow for SMB customers, cutting time-to-first-value from 9 days to 36 hours
+Managed the product backlog for a payments reconciliation tool used by internal finance teams, saving ~15 hours/week of manual work
+Collaborated directly with compliance and legal to ship features meeting PCI-DSS requirements
+Wrote and maintained PRDs, ran sprint planning, and represented product in exec-level roadmap reviews`,
+    },
+    {
+      id: makeId(),
+      from: '2019',
+      to: '2020',
+      employer: 'BrightHealth',
+      role: 'Associate Product Manager',
+      description: `Supported the patient intake team, shipping a digital forms product that reduced front-desk paperwork time by 40%
+Conducted usability testing sessions and synthesized findings into prioritized backlog items`,
+    },
+  ],
+  education: [
+    {
+      id: makeId(),
+      from: '2015',
+      to: '2019',
+      college: 'University of Michigan',
+      degree: 'B.S. Business Administration',
+    },
+  ],
+  coreCompetencies: [
+    'Product strategy',
+    'Roadmapping',
+    'User research',
+    'A/B testing',
+    'SQL (intermediate)',
+    'Figma',
+    'Jira',
+    'Stakeholder management',
+    'Agile/Scrum',
+    'PRD writing',
+    'Cross-functional leadership',
+    'Data-informed decision making',
+  ],
+  trainingCertifications: ['Certified Scrum Product Owner (CSPO)', 'Reforge — Product Strategy'],
 }
 
 function mkHistory(stage: Pipeline['stage'], daysAgo: number, note: string) {

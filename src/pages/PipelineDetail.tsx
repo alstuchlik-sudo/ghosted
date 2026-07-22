@@ -25,7 +25,7 @@ export function PipelineDetail() {
   }
 
   const suggestedNext = nextStage(pipeline.stage)
-  const hasCv = profile.cvText.trim().length > 0
+  const hasCv = profile.experience.length > 0 || profile.careerObjective.trim().length > 0
 
   function handleLogUpdate(e: React.FormEvent) {
     e.preventDefault()

@@ -33,7 +33,35 @@ export interface Pipeline {
   prep: PrepOutput | null
 }
 
+export interface BioInfo {
+  email: string
+  phone: string
+  address: string
+}
+
+export interface ExperienceEntry {
+  id: string
+  from: string
+  to: string
+  employer: string
+  role: string
+  description: string
+}
+
+export interface EducationEntry {
+  id: string
+  from: string
+  to: string
+  college: string
+  degree: string
+}
+
 export interface Profile {
   name: string
-  cvText: string
+  bio: BioInfo
+  careerObjective: string
+  experience: ExperienceEntry[]
+  education: EducationEntry[]
+  coreCompetencies: string[]
+  trainingCertifications: string[]
 }
