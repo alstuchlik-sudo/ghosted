@@ -37,10 +37,21 @@ https://ghosted-jade.vercel.app, source pushed to
   `trainingCertifications[]` as string lists. The prep generator reads
   directly from these fields — don't reintroduce a free-text CV blob without
   updating `prepGenerator.ts` to match.
-- **Storage keys are versioned** (`ghosted:pipelines:v2`, `ghosted:profile:v2`,
-  `ghosted:seeded:v2` in `store.tsx`). Bump the suffix again if you change
-  either shape incompatibly, so existing demo browsers reseed cleanly instead
-  of loading stale/malformed data.
+- **Storage keys are versioned independently** (`ghosted:pipelines:v3`,
+  `ghosted:profile:v2`, `ghosted:seeded:v3` in `store.tsx` — the pipelines and
+  seeded-flag keys bumped to v3 when `Pipeline` gained `salary`/`likelihood`/
+  `favorite`; profile stayed on v2 since its shape didn't change). Bump the
+  relevant suffix again if you change a shape incompatibly, so existing demo
+  browsers reseed cleanly instead of loading stale/malformed data.
+- **Pipeline detail page shows everything inline, no click-through.**
+  `PipelineDetail.tsx` renders JD text, JD link, salary, and likelihood
+  directly in a "Details" panel — "Edit details" only opens the edit form, it
+  is never the sole way to see a field. Keep any new pipeline field visible on
+  this page by default rather than hiding it behind edit mode.
+- **Likelihood** (`Pipeline.likelihood`, 0-100) is a user-set subjective score,
+  not derived — don't confuse it with `getStatus()` in `status.ts`, which is
+  activity-derived. They share a color ramp (`likelihoodColor()` in
+  `status.ts`) but are otherwise unrelated signals.
 - **Status/staleness logic** lives in `src/lib/status.ts` (thresholds,
   color mapping, the "They texted back!" / "Ghosted" / "Getting quiet" labels)
   — keep new status copy there, not scattered across components.
@@ -50,8 +61,12 @@ https://ghosted-jade.vercel.app, source pushed to
 
 ## Product summary (quick reference)
 
-- User manually tracks job pipelines (company, role, JD, stage, next-action date).
+- User manually tracks job pipelines (company, role, JD, salary, stage,
+  next-action date), plus a subjective likelihood score and a favorite flag
+  per pipeline.
 - System flags stale pipelines (no update in N days).
+- The pipeline detail page shows every field inline; users can favorite
+  pipelines and filter the dashboard to favorites only.
 - Per pipeline, user can trigger AI prep generation, which uses the JD + the
   user's CV/experience + the current pipeline stage to produce:
   1. Tailored CV bullets

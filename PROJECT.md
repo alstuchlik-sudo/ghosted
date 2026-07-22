@@ -35,10 +35,18 @@ different stage), rather than someone doing a single, occasional job search.
 ## Scope — MTP (what gets built/demoed)
 
 ### 1. Tracking tool (manual)
-- Add a pipeline: company, role, JD (link or pasted text), current stage
+- Add a pipeline: company, role, JD (link or pasted text), salary, current stage
 - Stages: Applied → Screening → Interview → Offer / Rejected
 - Set/update next-action date per pipeline
 - Staleness nudge: flag any pipeline with no update in N days
+- Likelihood: a subjective 0-100 "gut feeling" score per pipeline (fit + odds
+  of winning it), set by the user, shown on the overview card and pipeline
+  detail — not derived from any tracking data, purely a personal gut check
+- Favorites: mark any pipeline as a favorite and filter the overview to
+  favorites only
+- Pipeline detail view shows every field (JD text, JD link, salary,
+  likelihood, next action) inline, with no click-through required — "Edit
+  details" is only for editing, never the only way to see the data
 
 ### 2. AI prep-generation tool
 Triggered per pipeline. Takes as input: the JD, the user's CV/experience
@@ -76,6 +84,9 @@ cover letter."
 - Color coding for statuses: red/coral = ghosted, amber = going quiet,
   teal/green = active and healthy, blue = genuine positive movement (callback,
   offer). Color should reinforce the emotional read at a glance.
+- The likelihood score reuses the same red/amber/teal ramp (low/mid/high) for
+  visual consistency, but it's a distinct signal from pipeline status — status
+  is derived from tracking activity, likelihood is the user's own gut call.
 
 ## Out of scope for MTP
 
