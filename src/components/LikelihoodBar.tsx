@@ -1,4 +1,4 @@
-import { colorClasses, likelihoodColor } from '../lib/status'
+import { colorClasses, likelihoodColor, type StatusInfo } from '../lib/status'
 
 const BAR_FILL: Record<string, string> = {
   teal: 'bg-teal-500',
@@ -6,8 +6,16 @@ const BAR_FILL: Record<string, string> = {
   coral: 'bg-rose-500',
 }
 
-export function LikelihoodBar({ value, size = 'md' }: { value: number; size?: 'sm' | 'md' }) {
-  const color = likelihoodColor(value)
+export function LikelihoodBar({
+  value,
+  size = 'md',
+  colorFn = likelihoodColor,
+}: {
+  value: number
+  size?: 'sm' | 'md'
+  colorFn?: (value: number) => StatusInfo['color']
+}) {
+  const color = colorFn(value)
   const c = colorClasses[color]
   const height = size === 'sm' ? 'h-1.5' : 'h-2'
 

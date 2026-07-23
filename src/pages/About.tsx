@@ -57,11 +57,53 @@ export function About() {
               dashboard flags pipelines that have gone quiet or fully ghosted so nothing slips through.
             </li>
             <li>
+              <span className="font-medium text-slate-900 dark:text-slate-100">See a Ghost Risk Score per pipeline</span>{' '}
+              — a predictive read on how likely this one is to go quiet, before it actually does.
+            </li>
+            <li>
+              <span className="font-medium text-slate-900 dark:text-slate-100">Get a follow-up drafted for you</span> —
+              the moment a pipeline crosses into "Getting quiet" or "Ghosted," a "Draft a follow-up" button appears
+              with a ready-to-send email and LinkedIn message.
+            </li>
+            <li>
               <span className="font-medium text-slate-900 dark:text-slate-100">Generate tailored AI prep</span> per
               pipeline: CV bullets, a cover letter, and interview talking points — built from that pipeline's JD, your
               CV/experience profile, and the pipeline's current stage, not a generic template.
             </li>
           </ul>
+        </SectionCard>
+
+        <SectionCard title="Ghost Risk Score">
+          <p className="text-sm text-slate-600 dark:text-slate-300">
+            Every open pipeline (Applied, Screening, Interview) gets a 0-100% risk score estimating how likely it is
+            to go quiet, shown on its card and detail page along with the top reasons behind the number. It's a
+            heuristic, not a fortune-teller — but it's a lot more useful than a flat "N days = stale" timer, because
+            it actually weighs the signals that tend to predict ghosting:
+          </p>
+          <ul className="mt-3 space-y-1.5 text-sm text-slate-600 dark:text-slate-300">
+            <li>• How long it's been since your last update on this pipeline (the biggest factor)</li>
+            <li>• Stage — earlier stages (Applied) carry more baseline risk than a live Interview loop</li>
+            <li>• Role seniority — parsed from the role title (senior/leadership roles tend to have slower,
+              multi-stakeholder processes; high-volume entry-level roles get less individual follow-through)</li>
+            <li>• How the JD reads — vague language ("fast-paced," "wear many hats"), thin detail, no
+              team/reporting info, or no salary listed all correlate with quieter processes</li>
+          </ul>
+          <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
+            Resolved pipelines (Offer, Rejected) don't get a score — the risk isn't relevant once the outcome is
+            known.
+          </p>
+        </SectionCard>
+
+        <SectionCard title="Auto-drafted follow-ups">
+          <p className="text-sm text-slate-600 dark:text-slate-300">
+            This closes the loop from "detected" to "sent." As soon as a pipeline's status crosses into{' '}
+            <span className="font-medium text-slate-900 dark:text-slate-100">Getting quiet</span> or{' '}
+            <span className="font-medium text-slate-900 dark:text-slate-100">Ghosted</span>, a "Follow-up nudge"
+            section appears automatically on that pipeline's detail page — you don't have to remember to go looking
+            for it. One click on "Draft a follow-up" generates both an email and a short LinkedIn message, tailored
+            to the stage and exactly how long it's been since your last contact, in a tone that's neither desperate
+            nor passive. Copy, paste, send.
+          </p>
         </SectionCard>
 
         <SectionCard title="What the status labels mean">
@@ -90,11 +132,11 @@ export function About() {
 
         <SectionCard title="A note on the AI">
           <p className="text-sm text-slate-600 dark:text-slate-300">
-            Prep generation in this prototype is a deterministic keyword-matcher, not a live model call — it works
-            offline and costs nothing to demo, by design. It matches your job description against your CV/experience
-            profile to produce output that's tailored per pipeline and per stage, which is the actual point: prep
-            quality should depend on your real history and where you are in that specific process, not just "paste a
-            JD, get a cover letter."
+            Every "AI" feature here — prep generation, the Ghost Risk Score, and follow-up drafts — is a deterministic
+            heuristic, not a live model call. No API key, no backend, works offline, costs nothing to demo. That's a
+            deliberate choice for this prototype, not a limitation being hidden: each one matches real inputs (the
+            JD, your CV/experience profile, time elapsed, stage) against explainable rules, which is the actual
+            point — output that's tailored to your specific situation, not a generic template dressed up as AI.
           </p>
         </SectionCard>
       </div>

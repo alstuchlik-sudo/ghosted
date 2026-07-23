@@ -4,6 +4,8 @@ import { StatusBadge, StageBadge } from './StatusBadge'
 import { LikelihoodBar } from './LikelihoodBar'
 import { FavoriteToggle } from './FavoriteToggle'
 import { useStore } from '../store/store'
+import { getStatus } from '../lib/status'
+import { computeGhostRisk } from '../lib/ghostRisk'
 
 function formatDate(iso: string | null) {
   if (!iso) return null
@@ -39,6 +41,9 @@ export function PipelineCard({
 }: PipelineCardProps) {
   const { toggleFavorite } = useStore()
   const isOverdue = pipeline.nextActionDate && new Date(pipeline.nextActionDate) < new Date(new Date().toDateString())
+  const status = getStatus(pipeline)
+  const needsNudge = status.key === 'quiet' || status.key === 'ghosted'
+  const ghostRisk = needsNudge ? computeGhostRisk(pipeline) : null
 
   return (
     <Link
@@ -79,6 +84,18 @@ export function PipelineCard({
         <span className="truncate text-xs text-slate-500 dark:text-slate-400">{pipeline.salary || 'Salary not added'}</span>
         <LikelihoodBar value={pipeline.likelihood} size="sm" />
       </div>
+
+      {ghostRisk?.applicable && (
+        <div
+          className={`mt-3 rounded-lg px-2.5 py-1.5 text-xs ${
+            status.key === 'ghosted'
+              ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
+              : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
+          }`}
+        >
+          ⚠ {ghostRisk.score}% ghost risk — tap in to draft a follow-up
+        </div>
+      )}
 
       {pipeline.nextActionDate && (
         <div className={`mt-3 rounded-lg px-2.5 py-1.5 text-xs ${isOverdue ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300' : 'bg-slate-50 text-slate-600 dark:bg-slate-800/60 dark:text-slate-300'}`}>

@@ -3,10 +3,13 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useStore } from '../store/store'
 import { StatusBadge, StageBadge } from '../components/StatusBadge'
 import { PrepOutputView } from '../components/PrepOutputView'
+import { FollowUpDraftView } from '../components/FollowUpDraftView'
 import { LikelihoodBar } from '../components/LikelihoodBar'
+import { GhostRiskMeter } from '../components/GhostRiskMeter'
 import { FavoriteToggle } from '../components/FavoriteToggle'
 import { STAGES, type Stage } from '../types'
-import { nextStage } from '../lib/status'
+import { getStatus, nextStage } from '../lib/status'
+import { computeGhostRisk } from '../lib/ghostRisk'
 
 function formatDateTime(iso: string) {
   return new Date(iso).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
@@ -15,12 +18,14 @@ function formatDateTime(iso: string) {
 export function PipelineDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { pipelines, logUpdate, deletePipeline, toggleFavorite, generatePrepFor, profile } = useStore()
+  const { pipelines, logUpdate, deletePipeline, toggleFavorite, generatePrepFor, generateFollowUpFor, profile } =
+    useStore()
   const pipeline = pipelines.find((p) => p.id === id)
 
   const [note, setNote] = useState('')
   const [stageChoice, setStageChoice] = useState<Stage | ''>('')
   const [generating, setGenerating] = useState(false)
+  const [drafting, setDrafting] = useState(false)
 
   if (!pipeline) {
     return <p className="text-sm text-slate-500">Pipeline not found.</p>
@@ -28,6 +33,9 @@ export function PipelineDetail() {
 
   const suggestedNext = nextStage(pipeline.stage)
   const hasCv = profile.experience.length > 0 || profile.careerObjective.trim().length > 0
+  const status = getStatus(pipeline)
+  const ghostRisk = computeGhostRisk(pipeline)
+  const needsNudge = status.key === 'quiet' || status.key === 'ghosted'
 
   function handleLogUpdate(e: React.FormEvent) {
     e.preventDefault()
@@ -44,6 +52,14 @@ export function PipelineDetail() {
     await new Promise((r) => setTimeout(r, 550))
     generatePrepFor(pipeline.id)
     setGenerating(false)
+  }
+
+  async function handleDraftFollowUp() {
+    if (!pipeline) return
+    setDrafting(true)
+    await new Promise((r) => setTimeout(r, 550))
+    generateFollowUpFor(pipeline.id)
+    setDrafting(false)
   }
 
   function handleDelete() {
@@ -104,6 +120,14 @@ export function PipelineDetail() {
               <LikelihoodBar value={pipeline.likelihood} />
             </div>
           </div>
+          {ghostRisk.applicable && (
+            <div>
+              <div className="text-xs font-medium uppercase tracking-wide text-slate-400">Ghost risk</div>
+              <div className="mt-1.5">
+                <GhostRiskMeter risk={ghostRisk} />
+              </div>
+            </div>
+          )}
           <div>
             <div className="text-xs font-medium uppercase tracking-wide text-slate-400">Next action</div>
             <div className="mt-1 text-sm">
@@ -138,6 +162,41 @@ export function PipelineDetail() {
           </div>
         </div>
       </section>
+
+      {/* Follow-up nudge — surfaces automatically once this pipeline goes quiet or ghosted */}
+      {needsNudge && (
+        <section
+          className={`mt-6 rounded-xl border p-4 ${
+            status.key === 'ghosted'
+              ? 'border-rose-200 bg-rose-50 dark:border-rose-900 dark:bg-rose-950/30'
+              : 'border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30'
+          }`}
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="font-semibold">Follow-up nudge</h2>
+              <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-300">
+                {status.key === 'ghosted'
+                  ? "This one's gone quiet for a while — here's a draft ready to break the silence."
+                  : "This one's getting quiet. Here's a draft ready to send before it goes cold."}
+              </p>
+            </div>
+            <button
+              onClick={handleDraftFollowUp}
+              disabled={drafting}
+              className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+            >
+              {drafting ? 'Drafting…' : pipeline.followUpDraft ? 'Redraft' : 'Draft a follow-up'}
+            </button>
+          </div>
+
+          {pipeline.followUpDraft && (
+            <div className="mt-3">
+              <FollowUpDraftView draft={pipeline.followUpDraft} />
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Log update */}
       <section className="mt-6 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">

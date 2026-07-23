@@ -9,7 +9,7 @@ const SKILL_LEXICON = [
   'patient', 'self-serve', 'time-to-value', 'metrics',
 ]
 
-function extractKeywords(text: string): string[] {
+export function extractKeywords(text: string): string[] {
   const lower = text.toLowerCase()
   const found = SKILL_LEXICON.filter((term) => lower.includes(term))
   return Array.from(new Set(found))
@@ -34,7 +34,7 @@ function scoreAgainstKeywords(text: string, keywords: string[]): number {
   return keywords.reduce((score, kw) => (lower.includes(kw) ? score + 1 : score), 0)
 }
 
-interface ExperienceLine {
+export interface ExperienceLine {
   text: string
   employer: string
   role: string
@@ -50,7 +50,7 @@ function collectExperienceLines(profile: Profile): ExperienceLine[] {
   return lines
 }
 
-function pickRelevantExperienceLines(profile: Profile, keywords: string[], count: number): ExperienceLine[] {
+export function pickRelevantExperienceLines(profile: Profile, keywords: string[], count: number): ExperienceLine[] {
   const candidates = collectExperienceLines(profile)
   const ranked = candidates
     .map((line) => ({ line, score: scoreAgainstKeywords(line.text, keywords) }))

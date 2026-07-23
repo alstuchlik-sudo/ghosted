@@ -3,7 +3,7 @@ import type { PrepOutput } from '../types'
 
 type Tab = 'cv' | 'letter' | 'talking'
 
-function CopyButton({ text }: { text: string }) {
+export function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)
   return (
     <button

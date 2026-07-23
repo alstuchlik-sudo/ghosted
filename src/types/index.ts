@@ -17,6 +17,12 @@ export interface PrepOutput {
   talkingPoints: string[]
 }
 
+export interface FollowUpDraft {
+  generatedAt: string // ISO
+  email: string
+  linkedin: string
+}
+
 export interface Pipeline {
   id: string
   company: string
@@ -34,6 +40,7 @@ export interface Pipeline {
   nextActionNote: string
   history: HistoryEntry[]
   prep: PrepOutput | null
+  followUpDraft: FollowUpDraft | null
 }
 
 export interface BioInfo {

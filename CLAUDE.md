@@ -23,13 +23,24 @@ https://ghosted-jade.vercel.app, source pushed to
 - **Stack:** React + TypeScript + Vite + Tailwind v4 + react-router-dom. No
   backend — all state (`Pipeline[]`, `Profile`) lives in `localStorage` via
   the context/store in `src/store/store.tsx`.
-- **AI prep generation is not a real model call.** `src/lib/prepGenerator.ts`
-  is a deterministic keyword-matcher: it scores the JD against a skill lexicon
-  and the user's core competencies, then picks/tailors matching lines from
-  structured experience entries. This was a deliberate choice (no API key,
-  no backend, works offline) — swapping in a real LLM call is a contained
-  change to this one file, but confirm with the user first since it adds
-  real infra/cost to what's meant to be a lightweight demo.
+- **None of the "AI" features are real model calls.** Prep generation
+  (`src/lib/prepGenerator.ts`), the Ghost Risk Score (`src/lib/ghostRisk.ts`),
+  and follow-up drafts (`src/lib/followUpGenerator.ts`) are all deterministic
+  heuristics/keyword-matchers. This was a deliberate choice (no API key, no
+  backend, works offline) — swapping any one of them for a real LLM call is a
+  contained change to that one file, but confirm with the user first since it
+  adds real infra/cost to what's meant to be a lightweight demo.
+- **`prepGenerator.ts` exports shared matching helpers**
+  (`extractKeywords`, `pickRelevantExperienceLines`) that `followUpGenerator.ts`
+  reuses to pull the same JD-relevant CV highlight into a follow-up draft that
+  prep generation would use in a cover letter. Keep reusing these rather than
+  re-implementing keyword matching in a third place.
+- **Ghost Risk Score is computed, not stored** (`computeGhostRisk()` in
+  `ghostRisk.ts`, called fresh on every render like `getStatus()`) — it has to
+  react to time passing without any user action, so it can't be a static
+  field. It returns `{ score, reasons, applicable }`; `applicable` is `false`
+  for resolved pipelines (Offer/Rejected), which should hide the score in the
+  UI rather than show a 0%.
 - **Profile is structured, not free text** (`src/types/index.ts`): `bio`
   (email/phone/address, all optional), `careerObjective`, repeatable
   `experience[]` (from/to/employer/role/description) and `education[]`
@@ -37,12 +48,25 @@ https://ghosted-jade.vercel.app, source pushed to
   `trainingCertifications[]` as string lists. The prep generator reads
   directly from these fields — don't reintroduce a free-text CV blob without
   updating `prepGenerator.ts` to match.
-- **Storage keys are versioned independently** (`ghosted:pipelines:v3`,
-  `ghosted:profile:v2`, `ghosted:seeded:v3` in `store.tsx` — the pipelines and
-  seeded-flag keys bumped to v3 when `Pipeline` gained `salary`/`likelihood`/
-  `favorite`; profile stayed on v2 since its shape didn't change). Bump the
-  relevant suffix again if you change a shape incompatibly, so existing demo
-  browsers reseed cleanly instead of loading stale/malformed data.
+- **Storage keys are versioned independently** (`ghosted:pipelines:v4`,
+  `ghosted:profile:v2`, `ghosted:seeded:v4` in `store.tsx` — pipelines/seeded
+  bumped to v3 for `salary`/`likelihood`/`favorite`, then v4 for
+  `followUpDraft`; profile stayed on v2 throughout since its shape hasn't
+  changed since). Bump the relevant suffix again if you change a shape
+  incompatibly, so existing demo browsers reseed cleanly instead of loading
+  stale/malformed data.
+- **Follow-up drafts persist like `prep` does.** `Pipeline.followUpDraft` is
+  `FollowUpDraft | null`, set via `generateFollowUpFor(id)` in `store.tsx` —
+  same shape of pattern as `generatePrepFor`/`pipeline.prep`, including the
+  ~550ms artificial delay in the calling page before generating, so the
+  "AI thinking" pacing feels consistent across features.
+- **The follow-up nudge UI is conditional on status, not a fixed section.**
+  Both `PipelineCard.tsx` and `PipelineDetail.tsx` compute
+  `status.key === 'quiet' || status.key === 'ghosted'` and only render the
+  ghost-risk hint / "Follow-up nudge" section when true — this conditional
+  visibility is what makes it "automatic" (it surfaces itself; the user
+  doesn't have to remember to check), as opposed to the always-visible "AI
+  prep" section.
 - **Pipeline detail page shows everything inline, no click-through.**
   `PipelineDetail.tsx` renders JD text, JD link, salary, and likelihood
   directly in a "Details" panel — "Edit details" only opens the edit form, it
@@ -85,6 +109,12 @@ https://ghosted-jade.vercel.app, source pushed to
   view; status badges show their trigger condition on hover; an About page
   (nav: Pipelines / My CV / About) explains capabilities and the full status
   label glossary.
+- Open pipelines get a computed Ghost Risk Score (0-100%, with top reasons)
+  predicting likelihood of going quiet — a richer signal than the flat
+  day-threshold status alone.
+- The moment a pipeline's status crosses into "Getting quiet" or "Ghosted," a
+  "Draft a follow-up" CTA appears automatically and generates a tailored
+  email + LinkedIn message.
 - Per pipeline, user can trigger AI prep generation, which uses the JD + the
   user's CV/experience + the current pipeline stage to produce:
   1. Tailored CV bullets

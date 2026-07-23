@@ -76,13 +76,44 @@ differentiator is that prep quality depends on knowing the user's history and
 where they are in that specific process, not just "paste a JD, get a
 cover letter."
 
-### 3. About page
+### 3. Ghost Risk Score
+A 0-100% predictive score per open pipeline (Applied/Screening/Interview —
+not shown on resolved Offer/Rejected pipelines) estimating how likely it is
+to go quiet, shown on the overview card and pipeline detail alongside the
+top contributing reasons. This is the upgrade from a flat "N days = stale"
+timer to a signal that actually weighs patterns: time since last contact
+(primary driver), pipeline stage, role seniority (parsed from the role
+title), and how "ghost-prone" the JD reads — vague filler language, thin
+detail, no team/reporting info, no salary listed. Computed live from
+existing pipeline data (`src/lib/ghostRisk.ts`); not a stored field, since
+it has to change automatically as time passes without any user action.
+Deterministic heuristic, same "mock AI" approach as prep generation — not a
+live model call. This is the differentiator slide: "predicts ghosting
+before it happens."
+
+### 4. Auto-drafted follow-up nudge
+Closes the loop from "detected" to "drafted" to "ready to send." The moment
+a pipeline's status crosses into **Getting quiet** or **Ghosted**, a
+"Follow-up nudge" section appears automatically on that pipeline's detail
+page (and a compact risk/nudge hint appears on its overview card) — the
+user doesn't have to remember to check. A "Draft a follow-up" CTA button
+generates both an email and a LinkedIn message, tailored to the pipeline's
+stage and exactly how much time has passed since the last update, in a
+tone that's deliberately neither desperate nor passive — and, where
+possible, references one concrete, JD-relevant highlight from the user's
+CV/experience profile as a value-add reminder. Same deterministic
+generation approach as prep generation (`src/lib/followUpGenerator.ts`),
+stored on the pipeline like `prep` so a draft persists once generated and
+can be regenerated ("Redraft").
+
+### 5. About page
 A dedicated page (nav: Pipelines / My CV / About) explaining the app's
-capabilities in plain language and giving a full glossary of every status
-label with the exact trigger condition — the same explanation shown in each
-badge's hover tooltip, so the two never say different things. Exists because
-the status logic (day thresholds, stage-derived labels) isn't otherwise
-self-explanatory to a new user or a demo evaluator.
+capabilities in plain language — including what feeds the Ghost Risk Score
+and how auto-drafted follow-ups work — and giving a full glossary of every
+status label with the exact trigger condition — the same explanation shown
+in each badge's hover tooltip, so the two never say different things. Exists
+because the status logic (day thresholds, stage-derived labels) isn't
+otherwise self-explanatory to a new user or a demo evaluator.
 
 **What the status labels mean** (day thresholds live in `src/lib/status.ts`,
 constants `STALE_QUIET_DAYS` / `STALE_GHOSTED_DAYS` / `TEXTED_BACK_WINDOW_DAYS`):

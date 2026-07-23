@@ -106,6 +106,7 @@ export function buildSeedPipelines(): Pipeline[] {
       mkHistory('Interview', 1, 'Moved to onsite loop — 4 interviews scheduled'),
     ],
     prep: null,
+    followUpDraft: null,
   }
 
   const p2: Pipeline = {
@@ -128,6 +129,7 @@ export function buildSeedPipelines(): Pipeline[] {
       mkHistory('Screening', 9, 'Recruiter screen completed, said "next steps soon"'),
     ],
     prep: null,
+    followUpDraft: null,
   }
 
   const p3: Pipeline = {
@@ -147,6 +149,7 @@ export function buildSeedPipelines(): Pipeline[] {
     nextActionNote: '',
     history: [mkHistory('Applied', 24, 'Applied cold via job board')],
     prep: null,
+    followUpDraft: null,
   }
 
   const p4: Pipeline = {
@@ -169,6 +172,7 @@ export function buildSeedPipelines(): Pipeline[] {
       mkHistory('Screening', 30, 'Recruiter reached out to schedule screen'),
     ],
     prep: null,
+    followUpDraft: null,
   }
 
   const p5: Pipeline = {
@@ -193,6 +197,7 @@ export function buildSeedPipelines(): Pipeline[] {
       mkHistory('Rejected', 12, 'Passed — went with someone with more consumer growth experience'),
     ],
     prep: null,
+    followUpDraft: null,
   }
 
   return [p1, p2, p3, p4, p5]
